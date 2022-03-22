@@ -1,6 +1,1 @@
-
-{
-    "notion_databases": {
-        "playground": "https://www.notion.so/Playground-ca25e56a4738477b9c70dad7691fcafd"
-    }
-}
+{"notion_databases": {"playground": "https://www.notion.so/Playground-ca25e56a4738477b9c70dad7691fcafd", "test": "https://www.notion.so/cf1821e42c3e472d916cbcc49281a598", "task": "https://www.notion.so/6beca96159ab4a9ab4d7332579b719e2", "archive_tasks": "https://www.notion.so/6eeffe85d42241afbafb3d6aaa8447b5"}}

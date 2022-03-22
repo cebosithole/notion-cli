@@ -7,14 +7,14 @@ import click
 from notion_client import Client
 import helpers
 import validators
-from models.notion_props import TitleProp
 
-client: Client = Client(auth="secret_2dS1qVP0vQpyqZYuNhTEVnzP1Rim4FKzzLs8ckGOGk1") 
+client: Client = Client(
+    auth="secret_2dS1qVP0vQpyqZYuNhTEVnzP1Rim4FKzzLs8ckGOGk1")
 
 
 def info():
     users = client.users.list()
-    
+
     count = 1
     for user in users.get("results"):
         print(f''' {count}. Name: {user['name']}, Type: {user['type']}''')
@@ -22,30 +22,29 @@ def info():
 
 # functions related to databases
 
-def create_database(name,parent, list_props, db_type ):
+
+def create_database(name, parent, list_props, db_type, shared_dbs: dict):
     parent_id = None
     db_properties = helpers.build_db_props(list_props)
 
     if validators.url(parent):
-        parent_id = helpers.get_id_from_notionurl(parent,type="database")
-    elif parent in config.shared_notion_databases.keys():
-        db_url = config.shared_notion_databases.get(parent)
-        parent_id = helpers.get_id_from_notionurl(db_url,type="page")
+        parent_id = helpers.get_id_from_notionurl(parent, type="database")
+    elif parent in shared_dbs.keys():
+        db_url = shared_dbs.get(parent)
+        parent_id = helpers.get_id_from_notionurl(db_url, type="page")
 
-
-    
     res = client.databases.create(
-        parent = {
+        parent={
             "type": "page_id",
-        "page_id": parent_id
+            "page_id": parent_id
         },
-        title= [{
+        title=[{
             'text':
                 {
                     "content": name
                 }
         }],
-        properties = db_properties
+        properties=db_properties
     )
 
     if res["object"] != "error":
@@ -53,35 +52,52 @@ def create_database(name,parent, list_props, db_type ):
     else:
         return {"state": False}
 
-    
-
 
 def delete_database(name):
     pass
 
-def update_database(name,new_name, new_props):
-    db_title = name,
-    if new_name:
-        db_title = new_name
 
+def update_database(db_name, new_name, new_props, shared_dbs: dict):
+
+    res = {}
     # get id from saved names and urls
-    if name in config.shared_notion_databases.keys():
-        db_url = config.shared_notion_databases.get(name)
-        db_id = helpers.get_id_from_notionurl(db_url)
-        
+    if db_name in shared_dbs.keys():
+        db_url = shared_dbs.get(db_name)
+        db_id = helpers.get_id_from_notionurl(db_url, type="database")
         db_properties = helpers.build_db_props(new_props)
-        client.databases.update(
-            id=db_id,
-            title= [{
-            'text':
-                {
-                    "content": db_title
-                }
-        }],
-        properties = db_properties
-    )
+
+        if new_name:
+            print(new_name)
+            res = client.databases.update(
+                database_id=db_id,
+                title=[{
+                    'text': {
+                        "content": new_name
+                    }
+                }],
+                properties=db_properties
+            )
+            if res['object'] != "error":
+                return {"state": True, "changed_title": True}
+        else:
+
+            res = client.databases.update(
+                database_id=db_id,
+                title=[{
+                    'text': {
+                        "content": db_name
+                    }
+                }],
+                properties=db_properties
+
+            )
+            if res["object"] != "error":
+                return {"state": True, "changed_title": False}
     else:
         click.echo("Database not found")
+        return {"state": False}  
+    
+
 
 def show_databases():
     print(client.databases.list())
@@ -89,14 +105,17 @@ def show_databases():
 
 # functions related to pages
 
-def create_page(name, db,filled_props):
+def create_page(name, db, filled_props):
     pass
+
 
 def delete_page(name):
     pass
 
+
 def update_page(name, new_filled_props):
     pass
+
 
 def show_pages(db, start, end, order):
     pass

@@ -1,3 +1,4 @@
+from email.policy import default
 import json
 import constants
 import click
@@ -9,7 +10,7 @@ import helpers
 @click.group()
 @click.pass_context
 def main(ctx):
-    shared_databases : dict = {}
+    shared_databases = {}
 
     with open(constants.config_path, 'r') as config_file:
         data = json.load(config_file) 
@@ -19,7 +20,7 @@ def main(ctx):
     ctx.obj['Shared_Databases'] = shared_databases
 
 @main.command()
-def notion_info():
+def info():
     # connected users
     print("Connected Users: ")
     notion_crud.info()
@@ -47,22 +48,25 @@ def notion_info():
     type = click.Choice(constants.notion_db_types),
 
 )
-def create_db(parent,db,set_props, db_type):
-    click.echo("Creating Database...")
 
-    # perform necessary conversions
-    set_props = set_props.split(",")
+@click.pass_context
+def create_db(ctx,parent,db,set_props, db_type):
+    click.echo("Creating Database...")
     
-    create_db_res = notion_crud.create_database(name=db,list_props=set_props, parent=parent, db_type=db_type)
+    shared_dbs = ctx.obj["Shared_Databases"]
+    set_props = set_props.split(",") # props should be [name=title,done=checkbox]
+    
+    create_db_res = notion_crud.create_database(name=db,list_props=set_props, parent=parent, db_type=db_type, shared_dbs=shared_dbs)
     if create_db_res["state"]:
-        click.echo("New Database created")
+        click.echo("New Database Created")
     else:
         click.echo("Database Not Created", color=True)
         click.Abort()
     
-    helpers.add_db_url_to_config(db_name=db, url=create_db_res["url"])
-    print("Databases saved to config")
+    helpers.add_db_to_config(db_name=db, url=create_db_res["url"])
+    print("Database url added to config.json")
     print("Done.")
+
 
 @main.command()
 @click.option(
@@ -77,16 +81,32 @@ def create_db(parent,db,set_props, db_type):
 )
 @click.option(
     "--set-props",
+    default = "test=testval",
     help = "new list of properties i.e  --new-prop  title,checkbox",
-    required=True,
+    
 )
 @click.confirmation_option(prompt="This will overwrite db properties, continue?")
-def update_db(db,new_name, set_props):
+@click.pass_context
+def update_db(ctx,db,new_name, set_props):
     click.echo("Updating Database")
-
-    # perfom necessary conversions
+    
+    shared_dbs = ctx.obj["Shared_Databases"]
     set_props = set_props.split(",")
-    notion_crud.update_database(name=db,new_name= new_name, new_props=set_props)
+
+    res = notion_crud.update_database(db_name=db,new_name= new_name, new_props=set_props, shared_dbs=shared_dbs)
+    
+    if res["state"]:
+        print("Database Updated")
+        # changed old name to new name in config
+        if(res["changed_title"]):
+            helpers.add_db_to_config(db_name=new_name,url=shared_dbs[db])
+            helpers.delete_db_from_config(db_name=db)
+            click.echo("Database name changed in config")
+
+
+    else:
+        print("Database Not Updated")
+    print("Done")
 
 
 @main.command()

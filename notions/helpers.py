@@ -60,16 +60,33 @@ def map_to_notion_json_prop(db_props: dict, usr_filled_props: dict):
 
 def get_id_from_notionurl(url: str, type: str):
     if type=="database":
-        return url.split("/")[3][:32]
+        return url.split("/")[3][:33]
     if type== "page":
         return url.split("/")[3].split("-")[1]
     
 
 
-def save_db_url_to_config(db_name, url):
-    with open(constants.config_path, "w") as config_file:
-        data = json.dumo(
-            {db_name:url},
-            config_file)
+def add_db_to_config(db_name, url):
+    data = {}
+
+    with open(constants.config_path) as config_file:
+        data = json.load(config_file)
+        #add data
+        data["notion_databases"].update({db_name:url})
+    
+    #save
+    with open(constants.config_path, "w+") as config_file:
+        json.dump(data, config_file)
 
 
+def delete_db_from_config(db_name):
+    data = {}
+
+    with open(constants.config_path) as config_file:
+        data = json.load(config_file)
+        #add data
+        data["notion_databases"].pop(db_name)
+    
+    #save
+    with open(constants.config_path, "w+") as config_file:
+        json.dump(data, config_file)
