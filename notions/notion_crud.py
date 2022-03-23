@@ -3,10 +3,8 @@
     and pages
 '''
 
-from pickle import TRUE
-from xml.dom.pulldom import END_ELEMENT
+
 import click
-from isort import file
 from notion_client import Client
 import helpers
 import validators
@@ -164,8 +162,28 @@ def delete_page(database_src, rang, shared_dbs, display_pgs: bool):
 
 
 
-def update_page(name, new_filled_props):
-    pass
+def update_page(database_src, new_filled_props, shared_dbs):
+    updated_properties ={}
+    if validators.url(database_src) != True:
+        url = shared_dbs[database_src]
+        database_src =  helpers.get_id_from_notionurl(url,type="database")
+        updated_properties = helpers.convert_str_props_to_notion_db_props(
+            database_props= __get_database_props(db_id=database_src),
+            usr_props= new_filled_props)
+    
+    ###page selection
+    page = __prompt_page_selection(database_src)
+
+    client.pages.update(
+        page_id= page[0]['id'],
+        properties = updated_properties
+    )
+
+    print(f"Updated {page[0]['name']}")
+
+
+
+
 
 
 def show_pages(db, start, end, order):
@@ -182,9 +200,9 @@ def __prompt_page_selection(db_id):
     pages = __get_db_pages(db_id=db_id) 
     selected_pages = []
     for index,page in enumerate(pages):
-       print(f" {index}. {page['name']}")
+       print(f"    {index}. {page['name']}")
 
-    choice = input("Select page(s) to delete: (i.e 1 or 1-10): ").split("-")
+    choice = input("  Select page(s): (i.e 1 or 1-10): ").split("-")
 
     # add selected pages
     

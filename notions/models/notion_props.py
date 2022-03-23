@@ -51,6 +51,7 @@ class NumberProp(NotionBaseProperty):
 
 class CheckboxProp(NotionBaseProperty):
     def set_value(self, value):
-        self._value = bool(value)
+     
+        self._value = eval(value)
 
 

@@ -51,7 +51,7 @@ def convert_str_props_to_notion_db_props(database_props: dict, usr_props: str)->
     
     for usr_prop_name, usr_prop_value in usr_props_dict.items():
 
-        prop_exist =  True if database_props.get(usr_prop_name) != None  else False
+        prop_exist =  True if database_props[usr_prop_name] != None  else False
         
         
         if prop_exist:
@@ -61,7 +61,7 @@ def convert_str_props_to_notion_db_props(database_props: dict, usr_props: str)->
                 prop_type=prop_type
             )
             filled_notion_prop.set_value(usr_prop_value)
-        
+            
             converted_props.update(filled_notion_prop.get_prop())
         else:
             print(f"No Property Named {usr_prop_name} Found In Database")

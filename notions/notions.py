@@ -141,10 +141,9 @@ def add_pg(ctx, db, fill_props):
     help = "list of properties to update with new given values",
     required = True
 )
-def update_pg(db, fill_props):
-    print("Select Page To Update:")
-
-    print(f"{db}\n{fill_props}")
+@click.pass_context
+def update_pg(ctx,db, fill_props):
+    notion_crud.update_page(database_src=db,new_filled_props=fill_props,shared_dbs=ctx.obj['Shared_Databases'])
 
 @main.command()
 @click.option("--db",help="db name",required= True)
