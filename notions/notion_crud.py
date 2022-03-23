@@ -3,7 +3,10 @@
     and pages
 '''
 
+from pickle import TRUE
+from xml.dom.pulldom import END_ELEMENT
 import click
+from isort import file
 from notion_client import Client
 import helpers
 import validators
@@ -20,8 +23,7 @@ def info():
         print(f''' {count}. Name: {user['name']}, Type: {user['type']}''')
         ++count
 
-# functions related to databases
-
+# DATABASES
 
 def create_database(name, parent, list_props, db_type, shared_dbs: dict):
     parent_id = None
@@ -57,12 +59,12 @@ def delete_database(name):
     pass
 
 
-def update_database(db_name, new_name, new_props, shared_dbs: dict):
+def update_database(database_src, new_name, new_props, shared_dbs: dict):
 
     res = {}
     # get id from saved names and urls
-    if db_name in shared_dbs.keys():
-        db_url = shared_dbs.get(db_name)
+    if database_src in shared_dbs.keys():
+        db_url = shared_dbs.get(database_src)
         db_id = helpers.get_id_from_notionurl(db_url, type="database")
         db_properties = helpers.build_db_props(new_props)
 
@@ -85,7 +87,7 @@ def update_database(db_name, new_name, new_props, shared_dbs: dict):
                 database_id=db_id,
                 title=[{
                     'text': {
-                        "content": db_name
+                        "content": database_src
                     }
                 }],
                 properties=db_properties
@@ -105,12 +107,61 @@ def show_databases():
 
 # functions related to pages
 
-def create_page(name, db, filled_props):
-    pass
+def create_page( database_src, filled_props,shared_dbs):
+    '''
+        creates new page in the specified database
+    '''
+    if database_src in shared_dbs.keys():
+        db_url = shared_dbs.get(database_src)
+        db_id = helpers.get_id_from_notionurl(db_url, type= "database")
+        
+        res = client.pages.create(
+            parent={
+                "type": "database_id",
+                "database_id": db_id
+            },
+             properties = helpers.convert_str_props_to_notion_db_props(
+            usr_props= filled_props,
+            database_props= __get_database_props(db_id=db_id)
+        ),
+        )
+
+        if res['object']!='error':
+            return {"state": True, 'page_url': res["url"]}
+    else:
+        click.echo("Databases Not Found", err=True)
+        return {"state": False}
 
 
-def delete_page(name):
-    pass
+def delete_page(database_src, rang, shared_dbs, display_pgs: bool):
+    if validators.url(database_src) != True:
+        url = shared_dbs[database_src]
+        database_src = helpers.get_id_from_notionurl(url,type="database")
+        
+        
+    if rang !=None and display_pgs == False:
+        # deletes pages from spcified range
+        start,end = [int(x) for x  in rang.split("-")]
+        selected_pages = __get_db_pages(database_src)
+
+        for index,page in enumerate(selected_pages):
+            if(validators.between(index, min=start,max=end)):
+                client.pages.update(
+                    page_id=page['id'],
+                    archived= True
+                )
+                print(f"    Deleted {page['name']}")
+            
+    else:
+        selected_pages = __prompt_page_selection(database_src)
+        for page in selected_pages:
+            client.pages.update(
+                page_id=page['id'],
+                archived= True
+            )
+            print(f"    Deleted {page['name']}")
+
+
 
 
 def update_page(name, new_filled_props):
@@ -119,3 +170,64 @@ def update_page(name, new_filled_props):
 
 def show_pages(db, start, end, order):
     pass
+
+
+
+
+def __get_database_props(db_id):
+    database_json = client.databases.retrieve(database_id=db_id)
+    return database_json["properties"]
+
+def __prompt_page_selection(db_id):
+    pages = __get_db_pages(db_id=db_id) 
+    selected_pages = []
+    for index,page in enumerate(pages):
+       print(f" {index}. {page['name']}")
+
+    choice = input("Select page(s) to delete: (i.e 1 or 1-10): ").split("-")
+
+    # add selected pages
+    
+    for i in choice:
+        if int(i) < len(pages):
+            selected_pages.append(pages[int(i)])
+
+    return selected_pages
+
+   
+def __get_db_pages(db_id):
+
+    fetched_pages = client.databases.query(
+        database_id=db_id,
+        page_size = 5  # TODO: MAKE DYNAMIC
+    )['results']
+    pages = []
+   
+    for page in fetched_pages:
+        page_title = page["properties"]["name"]["title"]
+
+        if len(page_title):
+            pg_data = {
+                "name":page['properties']['name']['title'][0]['plain_text'],
+                "id": page['id']
+            }
+        else:
+            # use page id as name for unamed pages
+            pg_data = {
+                "name": page['id'],
+                "id":page['id']
+            }
+        pages.append(pg_data)
+    
+    return pages #[{name:x,id:y}]
+
+
+
+
+
+
+    
+
+
+
+

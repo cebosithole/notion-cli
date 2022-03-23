@@ -115,18 +115,19 @@ def update_db(ctx,db,new_name, set_props):
     help = "db name or url",
     required = True
 )
-@click.option(
-    "--name",
-    help = "page name",
-    required = True
-)
+
 @click.option(
     "--fill-props",
     help = "list of properties and their new values i.e --fill-props title=name,done=true",
     required = True
 )
-def add_pg(name, db, fill_props):
-    print(f"{name}\n{db}\n{fill_props}")
+@click.pass_context
+def add_pg(ctx, db, fill_props):
+    print("Creating New Page")
+    res = notion_crud.create_page(database_src=db,filled_props=fill_props, shared_dbs= ctx.obj["Shared_Databases"])
+
+    if res["state"]:
+        click.echo("Page Added.")
 
 
 @main.command()
@@ -145,6 +146,16 @@ def update_pg(db, fill_props):
 
     print(f"{db}\n{fill_props}")
 
+@main.command()
+@click.option("--db",help="db name",required= True)
+@click.option("--range", help="page id")
+@click.option("--show-pgs", is_flag=True,help="Dispalays list of pages to select from", type=click.BOOL, default=False)
+@click.confirmation_option(prompt="This will archive the selected pages, continue?")
+@click.pass_context
+def delete_pg(ctx,db,show_pgs, range):
+
+    print("Deleting Pages")
+    res = notion_crud.delete_page(database_src=db,rang=range,display_pgs=show_pgs, shared_dbs=ctx.obj["Shared_Databases"])
 
 @main.command()
 @click.option(

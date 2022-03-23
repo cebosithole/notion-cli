@@ -21,6 +21,7 @@ class NotionBaseProperty:
             }
         }
     def get_prop(self):
+
         prop_config = self.get_databse_prop_config()
         prop_config[self.name][self.type] = self._value
 
@@ -28,10 +29,9 @@ class NotionBaseProperty:
 
 
 class TitleProp(NotionBaseProperty):
-    def __init__(self, name=None, val=None, prop_type=None) -> None:
-        super().__init__(name, val, prop_type="title")
     def set_value(self, new_val):
-        self.value = [{
+        # self._value = new_val
+        self._value = [{
             'text': {
                 'content': new_val
             }
