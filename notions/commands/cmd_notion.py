@@ -10,15 +10,6 @@ import constants
 import helpers
 from services import notion_svc
 
-def get_local_configs() -> dict:
-    config = {}
-
-    with open(constants.config_path,'r') as config_file:
-        config  = json.load(config_file)
-        
-    return config
-    
-
 
 @click.group()
 @click.pass_context
@@ -69,7 +60,6 @@ def create_database(ctx,parent, db,type, props,):
 def update_db(ctx,db,new_name, props):
     
     print("Updating Database.")
-    
     cached_dbs = ctx.obj["configs"]["notion_databases"]
     props = props.split(",")
 
@@ -81,9 +71,7 @@ def update_db(ctx,db,new_name, props):
         if(res["changed_title"]):
             helpers.add_db_to_config(db_name=new_name,url=cached_dbs[db])
             helpers.delete_db_from_config(db_name=db)
-        
-
-
+    
     else:
         print(" Database Not Updated")
     print("Done")
@@ -93,13 +81,61 @@ def update_db(ctx,db,new_name, props):
 ##-----------PAGES COMMANDS-----------##
 
 #1. CREATE PAGE
+@notion.command("create-pg")
+@click.option("--db",help="database name or url", required=True)
+@click.option("--set-props",help="list of properties with values i.e [name=task01,done=True]",default="")
+@click.pass_context
+def create_pg(ctx,db,set_props):
+
+    print("Creating New Page")
+    cached_dbs = ctx.obj["configs"]["notion_databases"]
+    set_props = set_props.split(",")
+
+    res = notion_svc.create_page(database_name=db,properties=set_props,cached_databases=cached_dbs)
+
+    if res["state"]:
+        print(" page created")
+    else:
+        print(" Page Not Created")
+
 
 
 #2. UPDATE PAGE
+@notion.command("update-pg")
+@click.option("--db",help="database name or url", required=True)
+@click.option("--set-props",help="list of properties with values i.e [name=task01,done=True]",default="")
+@click.pass_context
+def create_pg(ctx,db,set_props):
+
+    print("Updating New Page")
+    cached_dbs = ctx.obj["configs"]["notion_databases"]
+    set_props = set_props.split(",")
+
+    res = notion_svc.update_page(database_name=db,filled_props=set_props,cached_databases=cached_dbs)
+
+
+
 
 
 #3. DELETE PAGE
-
 @notion.command()
-def notion_info():
-    print("notion shit")
+@click.option("--db",help="db name",required= True)
+@click.option("--range", help="page id")
+@click.option("--show-pgs", is_flag=True,help="Dispalays list of pages to select from", type=click.BOOL, default=False)
+@click.confirmation_option(prompt="This will archive the selected pages, continue?")
+@click.pass_context
+def delete_pg(ctx,db,show_pgs, range):
+
+    print("Deleting Pages")
+    cached_dbs = ctx.obj["configs"]["notion_databases"]
+    res = notion_svc.delete_page(database_name=db,rang=range,display_pgs=show_pgs, cached_databases=cached_dbs)
+
+
+
+def get_local_configs() -> dict:
+    config = {}
+
+    with open(constants.config_path,'r') as config_file:
+        config  = json.load(config_file)
+        
+    return config

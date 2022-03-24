@@ -47,7 +47,6 @@ def convert_str_props_to_notion_db_props(database_props: dict, usr_props: str)->
         example: name=todo,done=True -> {}
     '''
     
-    usr_props = usr_props.strip().split(",")
     usr_props_dict = list_to_dict(usr_props)
     converted_props = {}
     
@@ -75,10 +74,11 @@ def list_to_dict(data:list):
     # data = [key=val, key=val]
     dict_data = {}
     for item in data:
-        key,val = item.split("=")
-        new_dict = {key:val}
+        if "=" in item:
+            key,val = item.split("=")
+            new_dict = {key:val}
 
-        dict_data.update(new_dict)
+            dict_data.update(new_dict)
 
     return dict_data
     

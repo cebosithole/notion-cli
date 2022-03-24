@@ -116,6 +116,7 @@ def create_page( database_name, properties,cached_databases):
             database_props= __get_database_props(db_id=db_id)
         ),
         )
+    
 
         if res['object']!='error':
             return {"state": True, 'page_url': res["url"]}
@@ -155,14 +156,14 @@ def delete_page(database_name, rang, cached_databases, display_pgs: bool):
 
 
 
-def update_page(database_name, new_filled_props, cached_databases):
+def update_page(database_name, filled_props, cached_databases):
     updated_properties ={}
     if validators.url(database_name) != True:
         url = cached_databases[database_name]
         database_name =  helpers.get_id_from_notionurl(url,type="database")
         updated_properties = helpers.convert_str_props_to_notion_db_props(
             database_props= __get_database_props(db_id=database_name),
-            usr_props= new_filled_props)
+            usr_props= filled_props)
     
     ###page selection
     pages = __prompt_page_selection(database_name)
@@ -172,7 +173,8 @@ def update_page(database_name, new_filled_props, cached_databases):
             page_id=page['id'],
             properties = updated_properties
         )
-    print(f"Updated {page['name']}")
+        print(f" Updated {page['name']}")
+    
 
 
 
