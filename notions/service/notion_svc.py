@@ -21,16 +21,16 @@ def info():
         print(f''' {count}. Name: {user['name']}, Type: {user['type']}''')
         ++count
 
-# DATABASES
+### DATABASES ###
 
-def create_database(name, parent, list_props, db_type, shared_dbs: dict):
+def create_database(name, parent, list_props, db_type, cached_databases: dict):
     parent_id = None
     db_properties = helpers.build_db_props(list_props)
 
     if validators.url(parent):
         parent_id = helpers.get_id_from_notionurl(parent, type="database")
-    elif parent in shared_dbs.keys():
-        db_url = shared_dbs.get(parent)
+    elif parent in cached_databases.keys():
+        db_url = cached_databases.get(parent)
         parent_id = helpers.get_id_from_notionurl(db_url, type="page")
 
     res = client.databases.create(
@@ -53,16 +53,13 @@ def create_database(name, parent, list_props, db_type, shared_dbs: dict):
         return {"state": False}
 
 
-def delete_database(name):
-    pass
 
-
-def update_database(database_src, new_name, new_props, shared_dbs: dict):
+def update_database(database_name, new_name, new_props, cached_databases):
 
     res = {}
     # get id from saved names and urls
-    if database_src in shared_dbs.keys():
-        db_url = shared_dbs.get(database_src)
+    if database_name in cached_databases.keys():
+        db_url = cached_databases.get(database_name)
         db_id = helpers.get_id_from_notionurl(db_url, type="database")
         db_properties = helpers.build_db_props(new_props)
 
@@ -85,7 +82,7 @@ def update_database(database_src, new_name, new_props, shared_dbs: dict):
                 database_id=db_id,
                 title=[{
                     'text': {
-                        "content": database_src
+                        "content": database_name
                     }
                 }],
                 properties=db_properties
@@ -99,18 +96,15 @@ def update_database(database_src, new_name, new_props, shared_dbs: dict):
     
 
 
-def show_databases():
-    print(client.databases.list())
 
+## pages
 
-# functions related to pages
-
-def create_page( database_src, filled_props,shared_dbs):
+def create_page( database_name, properties,cached_databases):
     '''
         creates new page in the specified database
     '''
-    if database_src in shared_dbs.keys():
-        db_url = shared_dbs.get(database_src)
+    if database_name in cached_databases.keys():
+        db_url = cached_databases.get(database_name)
         db_id = helpers.get_id_from_notionurl(db_url, type= "database")
         
         res = client.pages.create(
@@ -119,7 +113,7 @@ def create_page( database_src, filled_props,shared_dbs):
                 "database_id": db_id
             },
              properties = helpers.convert_str_props_to_notion_db_props(
-            usr_props= filled_props,
+            usr_props= properties,
             database_props= __get_database_props(db_id=db_id)
         ),
         )
@@ -131,16 +125,16 @@ def create_page( database_src, filled_props,shared_dbs):
         return {"state": False}
 
 
-def delete_page(database_src, rang, shared_dbs, display_pgs: bool):
-    if validators.url(database_src) != True:
-        url = shared_dbs[database_src]
-        database_src = helpers.get_id_from_notionurl(url,type="database")
+def delete_page(database_name, rang, cached_databases, display_pgs: bool):
+    if validators.url(database_name) != True:
+        url = cached_databases[database_name]
+        database_name = helpers.get_id_from_notionurl(url,type="database")
         
         
     if rang !=None and display_pgs == False:
         # deletes pages from spcified range
         start,end = [int(x) for x  in rang.split("-")]
-        selected_pages = __get_db_pages(database_src)
+        selected_pages = __get_db_pages(database_name)
 
         for index,page in enumerate(selected_pages):
             if(validators.between(index, min=start,max=end)):
@@ -151,7 +145,7 @@ def delete_page(database_src, rang, shared_dbs, display_pgs: bool):
                 print(f"    Deleted {page['name']}")
             
     else:
-        selected_pages = __prompt_page_selection(database_src)
+        selected_pages = __prompt_page_selection(database_name)
         for page in selected_pages:
             client.pages.update(
                 page_id=page['id'],
@@ -162,32 +156,24 @@ def delete_page(database_src, rang, shared_dbs, display_pgs: bool):
 
 
 
-def update_page(database_src, new_filled_props, shared_dbs):
+def update_page(database_name, new_filled_props, cached_databases):
     updated_properties ={}
-    if validators.url(database_src) != True:
-        url = shared_dbs[database_src]
-        database_src =  helpers.get_id_from_notionurl(url,type="database")
+    if validators.url(database_name) != True:
+        url = cached_databases[database_name]
+        database_name =  helpers.get_id_from_notionurl(url,type="database")
         updated_properties = helpers.convert_str_props_to_notion_db_props(
-            database_props= __get_database_props(db_id=database_src),
+            database_props= __get_database_props(db_id=database_name),
             usr_props= new_filled_props)
     
     ###page selection
-    page = __prompt_page_selection(database_src)
+    pages = __prompt_page_selection(database_name)
 
-    client.pages.update(
-        page_id= page[0]['id'],
-        properties = updated_properties
-    )
-
-    print(f"Updated {page[0]['name']}")
-
-
-
-
-
-
-def show_pages(db, start, end, order):
-    pass
+    for page  in pages:
+        client.pages.update(
+            page_id=page['id'],
+            properties = updated_properties
+        )
+    print(f"Updated {page['name']}")
 
 
 
@@ -202,14 +188,17 @@ def __prompt_page_selection(db_id):
     for index,page in enumerate(pages):
        print(f"    {index}. {page['name']}")
 
-    choice = input("  Select page(s): (i.e 1 or 1-10): ").split("-")
+    choices = [int(x) for x in input("  Select page(s): (i.e 1 or 1-10): ").split("-")]
 
     # add selected pages
+    if len(choices) == 1:
+        page = pages[choices[0]]
+        selected_pages.append(page)
+    else:
+        for i in range(choices[0], choices[1]):
+            if int(i) < len(pages):
+                selected_pages.append(pages[int(i)])
     
-    for i in choice:
-        if int(i) < len(pages):
-            selected_pages.append(pages[int(i)])
-
     return selected_pages
 
    

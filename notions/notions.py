@@ -2,8 +2,8 @@ from email.policy import default
 import json
 import constants
 import click
-import notion_crud
 import helpers
+from service import notion_svc
 
 
 
@@ -23,7 +23,7 @@ def main(ctx):
 def info():
     # connected users
     print("Connected Users: ")
-    notion_crud.info()
+    notion_svc.info()
 
 # crud functions
 @main.command()
@@ -56,7 +56,7 @@ def create_db(ctx,parent,db,set_props, db_type):
     shared_dbs = ctx.obj["Shared_Databases"]
     set_props = set_props.split(",") # props should be [name=title,done=checkbox]
     
-    create_db_res = notion_crud.create_database(name=db,list_props=set_props, parent=parent, db_type=db_type, shared_dbs=shared_dbs)
+    create_db_res = notion_svc.create_database(name=db,list_props=set_props, parent=parent, db_type=db_type, cached_databases=shared_dbs)
     if create_db_res["state"]:
         click.echo("New Database Created")
     else:
@@ -93,7 +93,7 @@ def update_db(ctx,db,new_name, set_props):
     shared_dbs = ctx.obj["Shared_Databases"]
     set_props = set_props.split(",")
 
-    res = notion_crud.update_database(db_name=db,new_name= new_name, new_props=set_props, shared_dbs=shared_dbs)
+    res = notion_svc.update_database(database_name=db,new_name= new_name, new_props=set_props, cached_databases=shared_dbs)
     
     if res["state"]:
         print("Database Updated")
@@ -124,7 +124,7 @@ def update_db(ctx,db,new_name, set_props):
 @click.pass_context
 def add_pg(ctx, db, fill_props):
     print("Creating New Page")
-    res = notion_crud.create_page(database_src=db,filled_props=fill_props, shared_dbs= ctx.obj["Shared_Databases"])
+    res = notion_svc.create_page(database_name=db,properties=fill_props, cached_databases= ctx.obj["Shared_Databases"])
 
     if res["state"]:
         click.echo("Page Added.")
@@ -143,7 +143,7 @@ def add_pg(ctx, db, fill_props):
 )
 @click.pass_context
 def update_pg(ctx,db, fill_props):
-    notion_crud.update_page(database_src=db,new_filled_props=fill_props,shared_dbs=ctx.obj['Shared_Databases'])
+    notion_svc.update_page(database_name=db,new_filled_props=fill_props,cached_databases=ctx.obj['Shared_Databases'])
 
 @main.command()
 @click.option("--db",help="db name",required= True)
@@ -154,21 +154,8 @@ def update_pg(ctx,db, fill_props):
 def delete_pg(ctx,db,show_pgs, range):
 
     print("Deleting Pages")
-    res = notion_crud.delete_page(database_src=db,rang=range,display_pgs=show_pgs, shared_dbs=ctx.obj["Shared_Databases"])
+    res = notion_svc.delete_page(database_name=db,rang=range,display_pgs=show_pgs, cached_databases=ctx.obj["Shared_Databases"])
 
-@main.command()
-@click.option(
-    "--db",
-    help = "db name or url",
-    required = True
-)
-@click.option(
-    "--range",
-    help = " give starting and ending point i.e 5,10 \n sorted by creation_time asc",
-    required = True
-)
-def show_pgs(db,range):
-    print("Displays pages from range")
 
 @main.command()
 @click.pass_context
