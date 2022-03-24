@@ -1,23 +1,18 @@
-from email.policy import default
+#!/usr/bin/env python3
+
 import json
+from commands.cmd_notion import notion
 import constants
 import click
 import helpers
-from service import notion_svc
-
-
+from services import notion_svc
 
 @click.group()
 @click.pass_context
 def main(ctx):
-    shared_databases = {}
+   pass
 
-    with open(constants.config_path, 'r') as config_file:
-        data = json.load(config_file) 
-        shared_databases = data["notion_databases"]
-
-    ctx.ensure_object(dict)
-    ctx.obj['Shared_Databases'] = shared_databases
+main.add_command(cmd=notion)
 
 @main.command()
 def info():

@@ -27,14 +27,16 @@ def build_db_props(list_props: List):
     db_props = {}
 
     for item in list_props:
-        prop_name,prop_type  =  item.split("=")
-
-        new_prop = notion_props_map.get(prop_type, NotionBaseProperty)(
-            name=prop_name,
-            prop_type= prop_type
-        )
         
-        db_props.update(new_prop.get_databse_prop_config())
+        if "=" in item:
+            prop_name,prop_type  =  item.split("=")
+
+            new_prop = notion_props_map.get(prop_type, NotionBaseProperty)(
+                name=prop_name,
+                prop_type= prop_type
+            )
+            
+            db_props.update(new_prop.get_databse_prop_config())
 
     return db_props    
 
@@ -103,6 +105,7 @@ def add_db_to_config(db_name, url):
     #save
     with open(constants.config_path, "w+") as config_file:
         json.dump(data, config_file)
+        print(" config.json updated.")
 
 
 def delete_db_from_config(db_name):

@@ -64,7 +64,7 @@ def update_database(database_name, new_name, new_props, cached_databases):
         db_properties = helpers.build_db_props(new_props)
 
         if new_name:
-            print(new_name)
+            
             res = client.databases.update(
                 database_id=db_id,
                 title=[{
@@ -91,7 +91,6 @@ def update_database(database_name, new_name, new_props, cached_databases):
             if res["object"] != "error":
                 return {"state": True, "changed_title": False}
     else:
-        click.echo("Database not found")
         return {"state": False}  
     
 

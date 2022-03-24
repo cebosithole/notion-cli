@@ -12,14 +12,16 @@
             "module": "notions",
             "justMyCode": true,
             "args": [
-                "update-db",
+                "notion",
+                "create-db",
+                "-p",
+                "playground",
                 "--db",
                 "tasks",
-                "--new-name",
-                "todos",
-                "--set-props",
-                "name=title,check=checkbox",
-                "--yes"
+                "--props",
+                "name=title,done=checkbox",
+                "--type",
+                "list"
             ]
         },
         {
