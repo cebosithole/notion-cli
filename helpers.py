@@ -15,6 +15,14 @@ notion_props_map = {
 
     }
 
+def get_local_configs() -> dict:
+    config = {}
+
+    with open(constants.config_path,'r') as config_file:
+        config  = json.load(config_file)
+        
+    return config
+
 def build_db_props(list_props: List):
     '''
         converts list of items to notion database props

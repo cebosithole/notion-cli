@@ -12,16 +12,8 @@
             "module": "notions",
             "justMyCode": true,
             "args": [
-                "notion",
-                "create-db",
-                "-p",
-                "playground",
-                "--db",
-                "tasks",
-                "--props",
-                "name=title,done=checkbox",
-                "--type",
-                "list"
+                "charts",
+            
             ]
         },
         {

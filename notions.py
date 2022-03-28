@@ -10,10 +10,10 @@ from services import notion_svc
 
 @click.group()
 @click.pass_context
-def main(ctx):
+def notion_app(ctx):
    pass
 
-main.add_command(cmd=notion)
-main.add_command(cmd=charts)
+notion_app.add_command(cmd=notion)
+notion_app.add_command(cmd=charts)
 if __name__=="__main__":
-    main()
+    notion_app()

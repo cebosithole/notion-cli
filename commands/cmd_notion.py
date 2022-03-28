@@ -37,15 +37,16 @@ def create_database(ctx,parent, db,type, props,):
     print("Creating New Database")
     cached_dbs =  ctx.obj["configs"]["notion_databases"]
     props = props.split(",")
-    res =  notion_svc.create_database(parent=parent,name=db,list_props=props, cached_databases=cached_dbs,db_type=type)
+    res =  notion_svc.create_database(parent=parent,database_name=db,list_props=props, cached_databases=cached_dbs,db_type=type)
     
     if res["state"]:
-        print(f" {db} Created.")
+        print(res["msg"])
         # save new database to json
         helpers.add_db_to_config(db_name=db,url=res["url"])
         
         
     else:
+        print(res["msg"])
         print(" Database Not Created")
     
     print("Done.")
@@ -66,9 +67,9 @@ def update_db(ctx,db,new_name, props):
     res = notion_svc.update_database(database_name=db,new_name= new_name, new_props=props, cached_databases=cached_dbs)
     
     if res["state"]:
-        print(f" {db} Updated.")
+        print(res["msg"])
         # save new database name to config.json
-        if(res["changed_title"]):
+        if(bool(new_name)):
             helpers.add_db_to_config(db_name=new_name,url=cached_dbs[db])
             helpers.delete_db_from_config(db_name=db)
     
@@ -123,11 +124,16 @@ def create_pg(ctx,db,set_props):
 @click.option("--range", help="page id")
 @click.option("--show-pgs", is_flag=True,help="Dispalays list of pages to select from", type=click.BOOL, default=False)
 @click.pass_context
-def delete_pg(ctx,db,show_pgs, range):
+def delete_pg(ctx,db,range,show_pgs=False):
 
     print("Deleting Pages")
-    cached_dbs = ctx.obj["configs"]["notion_databases"]
-    res = notion_svc.delete_page(database_name=db,rang=range,display_pgs=show_pgs, cached_databases=cached_dbs)
+    res = notion_svc.delete_page(database_name=db,rang=range,show_pgs=show_pgs)
+
+    if res["state"]:
+        print(res["msg"])
+    else:
+        print(res["state"])
+        print("Pages Not Deleted.")
 
 
 #4. SHOW PAGES IN DATABASE
@@ -135,7 +141,8 @@ def delete_pg(ctx,db,show_pgs, range):
 @click.option("--db", help="database name", required=True)
 @click.pass_context
 def show_pages(ctx,db):
-    print("Print DIsplays pretty table")
+    print(notion_svc.tabulate_db_pgs(db))
+
 
 def get_local_configs() -> dict:
     config = {}

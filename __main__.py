@@ -1,3 +1,4 @@
+from notions import notion_app
 
 if __name__=="__main__":
-    print("Notion main")
+   notion_app()
