@@ -102,7 +102,8 @@ def get_id_from_notionurl(url: str, type: str):
         return url.split("/")[3].split("-")[1]
     
 
-def get_db_id(db_name, cached_dbs:dict):
+def get_db_id(db_name):
+    cached_dbs = get_local_configs()["notion_databases"]
     db_id = ""
     if validators.url(db_name):
         db_id = get_id_from_notionurl(url=db_name,type="database")

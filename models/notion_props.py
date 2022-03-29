@@ -46,7 +46,7 @@ class DateProp(NotionBaseProperty):
             
 class NumberProp(NotionBaseProperty):
     def set_value(self, value):
-        self._value = int(value)
+        self._value = eval(value)
 
 
 class CheckboxProp(NotionBaseProperty):

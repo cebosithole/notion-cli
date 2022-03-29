@@ -1,26 +1,14 @@
-'''
-    contains functions to crud notion databases
-    and pages
-'''
-
-
+import os
 import pprint
 import click
+import helpers
 from notion_client import Client
 from tabulate import tabulate
-import helpers
 import validators
 
 
-
-## NOTION SERVICE CONSTANSTS ###
-
-
-
-
 client: Client = Client(
-    auth="secret_2dS1qVP0vQpyqZYuNhTEVnzP1Rim4FKzzLs8ckGOGk1")
-
+    auth=os.environ.get("NotionToken"))
 
 def info():
     users = client.users.list()
@@ -61,7 +49,7 @@ def create_database(database_name, parent, list_props):
         return {"state": False, "msg": "ID not found.\n Database Not Created."}
 
 
-def update_database(database_name, new_name, new_props, cached_databases):
+def update_database(database_name, new_name, new_props):
     db_id = get_db_id(db_name=database_name,type="database")
     db_properties = helpers.build_db_props(new_props)
 
@@ -102,7 +90,7 @@ def update_database(database_name, new_name, new_props, cached_databases):
 
 ## pages
 
-def create_page( database_name, properties,cached_databases):
+def create_page( database_name, properties):
     '''
         creates new page in the specified database
     '''

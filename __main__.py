@@ -1,4 +1,4 @@
-from notions import notion_app
+from cli import cli
 
 if __name__=="__main__":
-   notion_app()
+   cli()
