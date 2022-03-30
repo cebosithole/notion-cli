@@ -11,7 +11,7 @@
 - Generates charts from databases
 - syncing with external services and many more utils
 
-and can easly add your own tools, ![Adding new commands](https://)
+notion-cli can be used with any scripts or cron and you can easly add your own commands and tools, ![Adding new commands](https://)
 
 ## Installation
 ```
