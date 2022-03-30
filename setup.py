@@ -1,3 +1,4 @@
+from numpy import maximum
 from setuptools import setup, find_packages
 
 
@@ -8,10 +9,6 @@ def read_requirements():
 
     return requirements
 
-print(find_packages(
-where="src"   
-     
-))
 setup(
     name='notion-cli',
     version='0.0.1',

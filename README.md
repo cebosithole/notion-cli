@@ -34,7 +34,7 @@ $ export NotionToken=TOKEN
 ```
 
 ## Usage
-  ### Interacting with notion
+  ### 1.Interacting with notion
   1.  create new database
     ```
      $ notion-cli databases --create --name DB_NAME --props PROP_NAME=PROP_TYPE,..,
@@ -44,14 +44,15 @@ $ export NotionToken=TOKEN
     ```
   2.  updating database attributes
   ```
- $ notion-cli databases --update --name tasks_db --new-name archived_tasks
+ $ notion-cli databases --update 
+ --db tasks_db --new-name archived_tasks
   ```
 
   3.  creating new page
   ```
  $ notion-cli pages --add-pg --db DB_NAME --set-props name=title,done=checkbox
   ```
-  4.  show
+  4.  show page(s) on terminal
   ```
    //display db
    $ notion-cli show --name DB_NAME  --limit int
@@ -63,10 +64,23 @@ $ export NotionToken=TOKEN
 ```
   ![More- interacting with notion](https://)
 
-  ### Exporting
-  > :warning: **Not Implemented**
+  ### 2. Exporting
+  > :warning: **Not Fully Implemented**
+1. exporting
+```
+$ notion-cli export --db DB_NAME --to FILE_TYPE  --dest PATH_SAVE_FILE
 
-  ### Generating Charts
+// use flag -r to export pages also
+```
 
-  ### Syncing
+  ### 3. Generating Charts
+> :warning: **Not Fully Implemented**
+1. charting, (uses matplotlib)
+```
+$ notion-cli charts line --db DB_NAME -x PROP_NAME -y PROP_NAME
+```
+
+
+## Contributors
+* Cebo Sithole
 
