@@ -1,6 +1,7 @@
 import os
 import pprint
 import click
+from config import *
 import helpers
 from notion_client import Client
 from tabulate import tabulate
@@ -8,7 +9,7 @@ import validators
 
 
 client: Client = Client(
-    auth=os.environ.get("NotionToken"))
+    auth=NOTION_TOKEN)
 
 def info():
     users = client.users.list()
@@ -154,7 +155,7 @@ def delete_page(database_name, rang, show_pgs=False):
 
 
 
-def update_page(database_name, filled_props, cached_databases):
+def update_page(database_name, filled_props):
     '''
         displays a list of pages to select from and update with new props
     '''            

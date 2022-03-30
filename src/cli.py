@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
 
-import json
-from commands.cmd_charts import cli
-from commands.cmd_notion import cli
-import constants
 import click
-import helpers
 import os
-from services import notion_svc
 
 commands_folder = os.path.join(os.path.dirname(__file__),"commands")
-
+print(commands_folder)
 class CLI(click.MultiCommand):
 
    def list_commands(self, ctx):
@@ -19,7 +13,7 @@ class CLI(click.MultiCommand):
           if filename.startswith("cmd_"):
              commands.append(filename[4:-3])
        commands.sort()
-       print(commands)
+       
        return commands
 
    def get_command(self,ctx,name):
@@ -33,7 +27,7 @@ class CLI(click.MultiCommand):
 
 
 
-cli = CLI()
+main_cli = CLI()
 
-if __name__=="__main__":
-    cli()
+if __name__ == "__main__":
+   main_cli()

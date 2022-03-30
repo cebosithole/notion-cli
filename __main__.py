@@ -1,4 +1,5 @@
-from cli import cli
+from .src.cli import main_cli
 
 if __name__=="__main__":
-   cli()
+    print("mmm")
+    main_cli()

@@ -16,7 +16,9 @@ CHART_TYPES = ["line","bar","pie"]
 @click.group()
 @click.pass_context
 def cli(ctx):
-    "Generating charts from a notion database"
+    """
+        Generating charts from a notion database
+        """
     pass
 
 

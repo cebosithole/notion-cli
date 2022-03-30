@@ -1,27 +1,20 @@
 import json
 import sys
-
-import click
 import validators
-import constants
+from config import *
+from constants import *
 from typing import List
 from models.notion_props import *
 
-notion_props_map = {
-        "title": TitleProp,
-        "number":  NumberProp,
-        "checkbox": CheckboxProp,
-        "date": DateProp,
 
-    }
 
 def get_local_configs() -> dict:
-    config = {}
+    data = {}
 
-    with open(constants.config_path,'r') as config_file:
-        config  = json.load(config_file)
+    with open(CACHED_DATA_PATH,'r') as config_file:
+        data  = json.load(config_file)
         
-    return config
+    return data
 
 def build_db_props(list_props: List):
     '''
@@ -120,13 +113,13 @@ def get_db_id(db_name):
 def add_db_to_config(db_name, url):
     data = {}
 
-    with open(constants.config_path) as config_file:
+    with open(CACHED_DATA_PATH) as config_file:
         data = json.load(config_file)
         #add data
         data["notion_databases"].update({db_name:url})
     
     #save
-    with open(constants.config_path, "w+") as config_file:
+    with open(CACHED_DATA_PATH, "w+") as config_file:
         json.dump(data, config_file)
         print(" config.json updated.")
 
@@ -134,11 +127,11 @@ def add_db_to_config(db_name, url):
 def delete_db_from_config(db_name):
     data = {}
 
-    with open(constants.config_path) as config_file:
+    with open(CACHED_DATA_PATH) as config_file:
         data = json.load(config_file)
         #add data
         data["notion_databases"].pop(db_name)
     
     #save
-    with open(constants.config_path, "w+") as config_file:
+    with open(CACHED_DATA_PATH, "w+") as config_file:
         json.dump(data, config_file)
